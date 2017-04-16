@@ -5,7 +5,7 @@ namespace Akademiano\HttpWarp;
 use Akademiano\HttpWarp\Url\Path;
 use Akademiano\HttpWarp\Url\Query;
 
-class Url
+class Url implements EnvironmentIncludeInterface
 {
     protected $defaultPorts = [80, 443];
     protected $rawUrl;
@@ -19,11 +19,36 @@ class Url
     protected $query;
     protected $fragment;
 
-    public function __construct($url = null)
+    /** @var  Environment */
+    protected $environment;
+
+    public function __construct($url = null, Environment $environment = null)
     {
-        if (!is_null($url)) {
+        if (null !== $url) {
             $this->setUrl($url);
         }
+        if (null !== $environment) {
+            $this->setEnvironment($environment);
+        }
+    }
+
+    /**
+     * @return Environment
+     */
+    public function getEnvironment()
+    {
+        if (null === $this->environment) {
+            $this->environment = new Environment();
+        }
+        return $this->environment;
+    }
+
+    /**
+     * @param Environment $environment
+     */
+    public function setEnvironment(Environment $environment)
+    {
+        $this->environment = $environment;
     }
 
     public function getId()
@@ -37,7 +62,7 @@ class Url
     public function getScheme()
     {
         if (is_null($this->scheme)) {
-            $this->scheme = isset($this->port) && ($this->port == 443) ? "https" : "http";
+            $this->scheme = $this->getEnvironment()->getScheme();
         }
 
         return $this->scheme;
@@ -57,7 +82,7 @@ class Url
     public function getDomain()
     {
         if (is_null($this->domain)) {
-            $this->domain = isset($_SERVER["HTTP_HOST"]) ? $_SERVER["HTTP_HOST"] : $_SERVER["SERVER_NAME"];
+            $this->domain = $this->getEnvironment()->getServerName();
         }
 
         return $this->domain;
@@ -77,7 +102,7 @@ class Url
     public function getPort()
     {
         if (is_null($this->port)) {
-            $this->port = isset($this->scheme) && $this->scheme === "https" ? 443 : 80;
+            $this->port = $this->getEnvironment()->getPort();
         }
 
         return $this->port;
