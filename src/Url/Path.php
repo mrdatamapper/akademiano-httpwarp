@@ -78,8 +78,12 @@ class Path extends ArrayObject implements ArrayableInterface, StringableInterfac
                 $this->items = [];
             } else {
                 $string = $this->getNormalStr();
-                $string = trim($string, "/");
-                $this->setItems(explode("/", $string));
+                $string = trim(trim($string, "/"));
+                if ($string !== "") {
+                    $this->setItems(explode("/", $string));
+                } else {
+                    $this->items = [];
+                }
             }
         }
         return $this->items;
@@ -99,7 +103,7 @@ class Path extends ArrayObject implements ArrayableInterface, StringableInterfac
                 return rawurlencode($val);
             }, $this->toArray());
 
-            $this->composedString = "/". implode("/", $parts);
+            $this->composedString = "/" . implode("/", $parts);
         }
         return $this->composedString;
     }
